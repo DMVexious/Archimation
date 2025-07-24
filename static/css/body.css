@@ -1,0 +1,65 @@
+/* Hero Page */
+.hero-page {
+  padding: 120px 5% 80px 5%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.hero-text {
+  flex-basis: 50%;
+  max-width: 50%;
+}
+
+.hero-text h1 {
+  font-size: 6vw;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-gold { color: var(--text-gold); }
+.text-cyan { color: var(--text-cyan); }
+
+.hero-text p {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.cta-button {
+  background-color: var(--button-bg);
+  color: var(--accent);
+  margin-top:1rem;
+  padding: 1.5rem 2.5rem;
+  border-radius: 9999px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+  display:flex;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.preview-video {
+  flex-basis: 45%;
+  max-width: 45%;
+  height: 450px;
+  background-color: #e2e8f0;
+  border-radius: 12px;
+}
+
+/* Input Page */
