@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Library - ARCHIMATION</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/style-library.css">
+
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+  <header class="header">
+    <nav class="navbar navbar--desktop">
+      <div class="navbar__container">
+        <a href="index.html" class="navbar__logo">ARCHIMATION</a>
+        <div class="navbar__links">
+          <a href="index.html#home-section" class="navbar__link">Home</a>
+          <a href="index.html#about-section" class="navbar__link">About</a>
+          <a href="library.html" class="navbar__link active">Library</a>
+        </div>
+        <div class="navbar__actions">
+           <a href="#" class="button button--secondary">
+             <i data-feather="user" class="button__icon"></i>
+             <span>My Account</span>
+           </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <section class="library-section">
+      <div class="container">
+        <header class="library-header">
+          <h1 class="library-title">Your Video Archive</h1>
+          <p class="library-subtitle">A collection of all your generated animations. Select a category to filter.</p>
+        </header>
+
+        <div class="filter-controls" id="filter-buttons">
+          <button class="button" data-filter="all">All</button>
+          <button class="button" data-filter="science">Science</button>
+          <button class="button" data-filter="math">Math</button>
+          <button class="button" data-filter="chemistry">Chemistry</button>
+          <button class="button" data-filter="history">History</button>
+        </div>
+
+        <div class="video-grid" id="video-grid">
+          
+          <a href="#" class="video-card-container" data-category="science">
+            <div class="video-card">
+              <div class="card-thumbnail">
+                <video class="hero__video" controls autoplay muted loop playsinline>
+                    <source src="/static/videos/Example.mp4" type="video/mp4"> Your browser does not support the video tag.
+                </video>
+              </div>
+              <div class="card-info">
+                <span class="category-badge science-badge">Science</span>
+                <h3 class="card-title">The Secrets of Quantum Physics</h3>
+                <p class="card-meta">Generated: 3 days ago • 5:42 min</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="video-card-container" data-category="math">
+            <div class="video-card">
+              <div class="card-thumbnail">
+                <video class="hero__video" controls autoplay muted loop playsinline>
+                    <source src="/static/videos/Example2.mp4" type="video/mp4"> Your browser does not support the video tag.
+                </video>
+              </div>
+              <div class="card-info">
+                <span class="category-badge math-badge">Math</span>
+                <h3 class="card-title">Visualizing Calculus Concepts</h3>
+                <p class="card-meta">Generated: 1 week ago • 8:11 min</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="video-card-container" data-category="history">
+            <div class="video-card">
+              <div class="card-thumbnail">
+                <video class="hero__video" controls autoplay muted loop playsinline>
+                    <source src="/static/videos/Example.mp4" type="video/mp4"> Your browser does not support the video tag.
+                </video>
+              </div>
+              <div class="card-info">
+                <span class="category-badge history-badge">History</span>
+                <h3 class="card-title">The Rise and Fall of Rome</h3>
+                <p class="card-meta">Generated: 2 weeks ago • 12:30 min</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#" class="video-card-container" data-category="chemistry">
+            <div class="video-card">
+              <div class="card-thumbnail">
+                <video class="hero__video" controls autoplay muted loop playsinline>
+                    <source src="/static/videos/Example2.mp4" type="video/mp4"> Your browser does not support the video tag.
+                </video>
+              </div>
+              <div class="card-info">
+                <span class="category-badge chemistry-badge">Chemistry</span>
+                <h3 class="card-title">Intro to Organic Reactions</h3>
+                <p class="card-meta">Generated: 1 month ago • 7:25 min</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    feather.replace();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const filterButtons = document.querySelectorAll('#filter-buttons .button');
+      const videoCards = document.querySelectorAll('#video-grid .video-card-container');
+
+      const allButton = document.querySelector('[data-filter="all"]');
+      if(allButton) {
+        allButton.classList.add('active');
+      }
+
+      filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          const filter = button.dataset.filter;
+
+          videoCards.forEach(card => {
+            if (filter === 'all' || card.dataset.category === filter) {
+              card.classList.remove('hide');
+            } else {
+              card.classList.add('hide');
+            }
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+# video_generator.py
+
+from google import genai
+import subprocess
+from pydantic import BaseModel
+import time
+import os
+import shutil 
+
+# --- SETUP ---
+output_folder = os.path.join('static', 'videos')
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+client1=genai.Client(api_key="AIzaSyBXnsmlS8PjixWp_FZquj0fwe9Gf4rw0HA")
+client2=genai.Client(api_key="AIzaSyBXnsmlS8PjixWp_FZquj0fwe9Gf4rw0HA")
+client3=genai.Client(api_key="AIzaSyDZDLCnTl5uvF1M0_WyqDWpVVmak74V5Jk")
+
+
+class FinalOutput(BaseModel):
+    file_name: str
+    source_code:str
+
+# --- The Main Function ---
+def create_video(text_prompt): 
+    print(f"Mulai membuat video dengan prompt: '{text_prompt}'")
+    
+    # Your prompts remain the same
+    scripting_base='''
+You are an expert Instructional Designer and Educational Scriptwriter for in-depth Manim animations. You specialize in transforming a complete course outline into a detailed, feature-length educational video script (approximately 10 minutes).
+Your task is to take a provided course overview and generate two distinct, synchronized scripts suitable for a comprehensive animated lesson:
+A highly detailed Animation Script / Storyboard detailing the visual actions in a Manim-aware way.
+An extensive Voiceover Script containing the corresponding narration.
+The final output of these two scripts must be perfectly formatted to be used as the primary input for a subsequent AI prompt that will generate the final Manim animation code.
+The Task & Core Requirements
+1. Comprehensive Content Generation for a 1-2-Minute Video:
+Target Runtime & Narration Length: Your primary goal is to create a script with a total runtime of approximately 1-2 minutes. At a standard narration pace (150-160 words per minute), this requires a voiceover script of approximately 300+ words. Your output should target this narration length.
+Embrace Depth and Detail: You MUST cover the entire Course Overview provided, not just a selection of topics. Treat each module and chapter as a significant segment of the video that needs to be fully explained.
+Enforce Granularity: To achieve the required length and detail, you must break down each Chapter from the overview into multiple, granular [Visual Action] and [Narration] steps. A single chapter might be composed of 5-10 (or more) distinct visual/narrative beats.
+Incorporate "Connective Tissue": A long video needs a strong narrative flow. You must write explicit transition scenes or narration between major concepts, chapters, or modules. For example: [Narration for Action 15] "Now that we understand how variables work, let's see how we can use them to make decisions in our code..."
+The topic of the script is: {topic}
+Strict Formatting for Output:
+
+You must generate two distinct sections with the exact headers shown below. The numbering must be perfectly synchronized.
+
+Required Output Format
+
+(The following is an example of the required structure and granularity. Do not deviate from it.)
+
+Part 1: Animation Script / Storyboard
+
+[Visual Action 1] A title card Text("An Introduction to Photosynthesis") appears in the center of the screen using the Write animation.
+[Visual Action 2] The title fades out. The screen is blank. A transition narration sets up the next topic.
+[Visual Action 3] Animate the drawing of a large, empty plant cell wall using Create.
+[Visual Action 4] A Circle representing the Chloroplast FadesIn inside the cell. Use Indicate or a color pulse in GREEN to draw attention to it.
+[Visual Action 5] Use CurvedArrow to animate three arrows labeled "Sunlight," "CO₂," and "H₂O" moving from the edges of the screen to the chloroplast.
+[Visual Action 6] The first set of arrows fades out. Two new Arrows labeled "Glucose (Energy)" and "Oxygen" animate moving out from the chloroplast towards the edge of the screen.
+[Visual Action 7] The entire diagram fades out. The chemical equation for photosynthesis is written out line-by-line using MathTex.
+[Visual Action 8] A concluding text Text("Photosynthesis: Powering Life") fades in.
+
+Part 2: Voiceover Script
+
+[Narration for Action 1] "Today, we're going to take a deep dive into one of the most essential chemical processes on Earth: Photosynthesis. Over the next ten minutes, we'll explore how it works from the cellular level up."
+[Narration for Action 2] "To truly understand photosynthesis, we have to start by thinking small. Very small, in fact. Let's journey into the microscopic world of a single plant leaf."
+[Narration for Action 3] "Every plant is made of cells. Here is a simplified diagram of a single plant cell. It acts as a tiny, self-contained factory."
+[Narration for Action 4] "And inside this factory is the most important piece of machinery for our process: a tiny organelle called the chloroplast. This is where the magic of photosynthesis actually happens."
+[Narration for Action 5] "To work, the chloroplast needs to take in three key ingredients from its environment: It draws in energy from sunlight, carbon dioxide from the air, and water, which the plant pulls up from the soil through its roots."
+[Narration for Action 6] "Through a complex chemical reaction, the chloroplast converts these simple ingredients into two vital products: glucose, which is a sugar that provides energy for the plant to grow, and oxygen, the gas that most living things, including us, need to breathe."
+[Narration for Action 7] "This entire, elegant process, from collecting ingredients to producing food and air, can be summarized by a single, balanced chemical equation."
+[Narration for Action 8] "In short, photosynthesis is the foundational process that powers nearly all life on our planet. Thank you for watching." 
+''' 
+
+code_script_base ='''You are a world-class Manim animator and computer graphics programmer. You will generate a single, complete, and runnable Python script for an educational animation. Your primary goal is to produce a script that is visually clean, well-paced, and runs correctly on the first attempt. Adherence to the following rules, which synthesize all critical context from previous failures, is mandatory and non-negotiable.
+Assumed System Prerequisites
+A fresh, dedicated Python virtual environment is in use.
+Manim Community v0.18.0 or newer is installed.
+The command pip install "manim-voiceover[coqui]" has been successfully run.
+A full LaTeX distribution (like MiKTeX or TeX Live) is installed and its bin directory is in the system's PATH.
+The espeak-ng program is installed on the system and is accessible in the system's PATH.
+Primary Inputs
+Course Topic: {Topic}
+Animation Script & Voice Over Script: {script_text}
+---
+{error_context}
+Pillar 1: Script & Scene Architecture
+Single Scene Class: The entire animation MUST be contained within a single Scene class inheriting from VoiceoverScene (e.g., class CalculusScene(VoiceoverScene):). Forbidden: Multiple Scene classes.
+Modular Helper Methods: The construct method MUST remain clean and only contain a sequence of calls to private helper methods (e.g., self._scene_01_intro()). All animation logic MUST be encapsulated in its own helper method.
+State Management: Mobjects that must persist across different helper methods MUST be stored as instance attributes (e.g., self.axes = ...).
+Pillar 2: Visual Layout, Pacing, and Clarity
+Zero Overlap & Generous Buffers: Layouts MUST be clean and spacious. Use large buffers.
+.to_edge() MUST use buff=1.5.
+.arrange() or .next_to() MUST use a buff of at least 1.0.
+Side-by-side comparisons MUST use .to_edge(LEFT, buff=2) and .to_edge(RIGHT, buff=2).
+Legibility: Use appropriate font_size (36 for normal text, 24 for labels).
+Voiceover Synchronization: All narrated animations MUST be wrapped in with self.voiceover(...) as tracker:. All self.play() calls inside this block MUST derive their runtime from tracker.duration. Forbidden: time.sleep().
+Pillar 3: Critical Error Prevention & API Integrity
+<ins>Rule 3.1: Strictly 2D Environment</ins>
+The Scene class MUST inherit from VoiceoverScene only. Forbidden: ThreeDScene.
+All visuals MUST be 2D. Forbidden: ThreeDAxes, Sphere, Cylinder, Cube.
+<ins>Rule 3.2: Modern Manim API Compliance</ins>
+Positioning:
+[CRITICAL] Two-Step Mobject Creation and Positioning: Chaining positioning methods (.to_edge(), .move_to(), .next_to(), .to_center()) in the same line as the mobject creation is STRICTLY FORBIDDEN. This is the primary cause of AttributeError: 'Mobject' object has no attribute '...' and AttributeError: 'NoneType' object has no attribute '...'. You MUST create the mobject first, then position it on a second, separate line.
+General API:
+Mobject(color=RED) is Required. .apply_color(RED) is Forbidden.
+axes.plot(...) is Required. .get_graph(...) is Forbidden.
+All functions for updaters (.add_updater(), always_redraw()) MUST be defined with two arguments: mobject and dt.
+<ins>Rule 3.3: Flawless LaTeX and Color Usage</ins>
+All MathTex or Tex strings containing backslashes MUST be Python raw strings (e.g., r"\\frac{{a}}{{b}}"). This prevents ValueError: latex error converting to dvi.
+Use Manim's standard uppercase color constants (e.g., RED, BLUE, GREEN, WHITE, GOLD). Forbidden: lowercase names, non-standard names like "brown" or "cyan", and undefined variables like GREEN_SCREEN.
+<ins>Rule 3.4: Robust Mobject Referencing</ins>
+[CRITICAL] TeX Mobject Referencing: Accessing MathTex sub-mobjects with numerical indices (e.g., my_tex[0][1]) is Forbidden.
+Required Pattern (The "Hook" Method): Use .get_part_by_tex("hook") to reliably select parts.
+Your "hook" string MUST be an exact match to a substring within the original MathTex string. If the hook does not exist, .get_part_by_tex() will return None, causing an AttributeError: 'NoneType' object has no attribute 'set_color'. Be precise.
+[CRITICAL] Two-Step Referencing for Surrounding Shapes: Passing a .get_part_by_tex() call directly inside a SurroundingRectangle is STRICTLY FORBIDDEN. This is the cause of the TypeError: getter() takes 1 positional argument but 2 were given error. You MUST get the sub-mobject first and store it in a variable.
+<ins>Rule 3.5: Robust Animation and Scene Clearing</ins>
+<ins>Rule 3.6: [CRITICAL] Self-Contained Helper Methods</ins>
+Helper methods like _clear_screen MUST be self-contained. They should NOT take mobjects as parameters. Instead, they should operate on the scene's current state (e.g., by inspecting self.mobjects). This avoids passing fragile state between methods.
+Screen Clearing: To clear the screen, you MUST use this specific implementation: mobjects_to_fade = VGroup(*[mob for mob in self.mobjects if isinstance(mob, VMobject)]) followed by self.play(FadeOut(mobjects_to_fade)).
+Transformations: Use Transform only for mobjects with identical point structures. For different shapes, you MUST use ReplacementTransform.
+Fundamental Primitives: Prioritize building visuals from fundamental primitives (Rectangle, Circle, Line, Arrow, MathTex, Text). Do not use complex, non-core, or deprecated mobjects like Checkmark, Pulsate, or RightTriangle.
+Pillar 4: Configuration & Dependencies
+Mandatory Imports: The script MUST start with these imports:
+from manim import *
+from manim_voiceover import VoiceoverScene
+from manim_voiceover.services.coqui import CoquiService
+setup() Method: This method is required and MUST contain:
+self.set_speech_service(CoquiService())
+self.camera.background_color = BLACK
+construct() Method: This method MUST begin by setting config.frame_width = 16.0 and config.frame_height = 9.0.
+Pillar 5: Final Output Structure
+The main scene class MUST be named Generated_Course.
+If a ThoughtBubble is required, you MUST include the full class definition provided in previous prompts.''' 
+
+    print("Generating animation script for short topic...")
+    script_model = genai.GenerativeModel("gemini-1.5-flash") # Use modern model names
+    script_response = script_model.generate_content(scripting_base.format(text_prompt=text_prompt))
+    script_text = script_response.text
+    print("Script has been generated.")
+
+    with open("Script.txt", "w", encoding="utf-8") as f:
+      f.write(script_text)
+
+    # --- ***FIX 3: The self-healing loop WITH A LIMIT*** ---
+    max_retries = 10
+    error_log = ""
+    last_failed_code = ""
+
+    for attempt in range(1, max_retries + 1):
+        print(f"\n--- CODE GENERATION ATTEMPT {attempt} of {max_retries} ---")
+
+        error_context_for_prompt = ""
+        if last_failed_code:
+            error_context_for_prompt = (
+                "CRITICAL: The previously generated code failed..."
+                # (rest of the error context prompt)
+            )
+        
+        current_prompt = code_script_base.format(
+            text_prompt=text_prompt,
+            script_text=script_text,
+            error_context=error_context_for_prompt
+        )
+        
+        # ***IMPROVEMENT 2: Use the robust Tool/Function Calling method***
+        code_model = genai.GenerativeModel(
+            "gemini-1.5-pro",
+            tools=[FinalOutput] # Pass the Pydantic class as a tool
+        )
+        
+        print("\nGenerating Manim code...")
+        try:
+            code_response = code_model.generate_content(current_prompt)
+            function_call = code_response.candidates[0].content.parts[0].function_call
+            final_output = FinalOutput(**function_call.args)
+            print(f"Code has been generated! Filename: {final_output.file_name}")
+
+        except (Exception, IndexError, AttributeError) as e:
+            print(f"FATAL ERROR during code generation or response parsing: {e}")
+            error_log = f"Model failed to generate valid structured data or another API error occurred: {e}"
+            last_failed_code = "No code was generated due to an API or JSON parsing error."
+            print("--- RETRYING... ---")
+            time.sleep(2) # Wait a moment before retrying
+            continue # Go to the next iteration of the for loop
+
+        current_code = final_output.source_code
+        
+        # ***IMPROVEMENT 3: Create a safe, predictable filename to prevent security issues***
+        generated_filename = f"generated_code_attempt_{attempt}.py"
+        with open(generated_filename, "w", encoding="utf-8") as f:
+            f.write(current_code)
+        
+        # Now that you've installed ruff, this subprocess call should work
+        print(f"Running static analysis on {generated_filename}...")
+        ruff_result = subprocess.run(["ruff", "check", generated_filename], capture_output=True, text=True, check=False)
+        mypy_result = subprocess.run(["mypy", generated_filename, "--ignore-missing-imports"], capture_output=True, text=True, check=False)
+
+        if ruff_result.returncode != 0 or mypy_result.returncode != 0:
+            print("--- STATIC ANALYSIS FAILED ---")
+            # ... (your logic for handling this) ...
+            last_failed_code = current_code
+            os.remove(generated_filename) # Clean up failed file
+            print("--- RETRYING... ---")
+            continue
+
+        print("--- Static analysis passed! ---")
+        
+        print(f'Running manim file: manim -ql {generated_filename} Generated_Course')
+        result = subprocess.run(["manim", "-ql", generated_filename, "Generated_Course"], capture_output=True, text=True, check=False)
+
+        if result.returncode != 0:
+            print("\n--- MANIM EXECUTION FAILED ---")
+            # ... (your logic for handling this) ...
+            last_failed_code = current_code
+            os.remove(generated_filename) # Clean up failed file
+            print("--- RETRYING... ---")
+            continue
+        else:
+            print("\n--- MANIM EXECUTION SUCCESSFUL! ---")
+            # ... (your logic for moving the file) ...
+            
+            # ***IMPROVEMENT 4: Proper cleanup and returning the value***
+            script_name_base = generated_filename.replace('.py', '')
+            manim_video_path = os.path.join("media", "videos", script_name_base, "480p15", "Generated_Course.mp4")
+
+            if not os.path.exists(manim_video_path):
+                print(f"ERROR: Could not find the generated video at {manim_video_path}")
+                os.remove(generated_filename)
+                return None
+
+            # ... (rest of your file moving logic) ...
+            final_video_filename = ... # your final filename
+            destination_path = os.path.join(output_folder, final_video_filename)
+            shutil.move(manim_video_path, destination_path)
+            
+            # Clean up all temporary files and folders
+            os.remove(generated_filename)
+            try:
+                shutil.rmtree("media")
+            except (OSError, FileNotFoundError) as e:
+                print(f"Could not clean up temporary Manim folders (this is non-critical): {e}")
+
+            return final_video_filename # This exits the function and the loop
+
+    # If the loop finishes without success, signal failure
+    print(f"--- All {max_retries} attempts failed. Aborting video generation. ---")
+    return None

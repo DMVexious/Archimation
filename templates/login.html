@@ -1,27 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="../static/css/login.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Gateway - ARCHIMATION</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/style-login.css">
+
+  <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <div class="input-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Login</button>
-        </form>
-        <p id="message" class="message"></p>
+
+  <div class="background-overlay"></div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <h1 class="login-title">Login</h1>
+      <p class="login-subtitle">Authenticate to access the command deck.</p>
+
+      <form action="index.html">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <i data-feather="user" class="input-icon"></i>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="e.g., Commander_Alex" 
+            required
+          >
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <i data-feather="key" class="input-icon"></i>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="●●●●●●●●●●" 
+            required
+          >
+        </div>
+
+        <div class="login-options">
+          <a href="#">Lost your key in a wormhole?</a>
+        </div>
+
+        <button type="submit" class="button button--primary button--full-width">
+          <span>Login</span>
+          <i data-feather="chevrons-right" class="button__icon"></i>
+        </button>
+      </form>
     </div>
-    <script src="../static/js/login.js"></script>
+  </div>
+
+  <script>
+    feather.replace();
+  </script>
 </body>
 </html>

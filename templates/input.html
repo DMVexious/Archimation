@@ -3,42 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARCHIMATION - Select Topic</title>
+  <title>ARCHIMATION - Create Animation</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="../static/css/general.css">
-  <link rel="stylesheet" href="../static/css/navbar.css">
-  <link rel="stylesheet" href="../static/css/input.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/style-input.css">
   <script src="https://unpkg.com/feather-icons"></script>
 </head>
+
 <body>
-  <div class="background-container"></div>
-
-  <div class="navbar-container">
-    <div class="menu"><a href="#" class="menu-button"><i data-feather="menu"></i></a></div>
-    <div class="header-name"><a id="white" href="index" class="home-link">ARCHIMATION</a></div>
-    <div class="account-profile"><a href="#" class="profile-icon"><i data-feather="user"></i></a></div>
-  </div>
-
-  <main class="content-container">
-    <div class="input-card">
-      <h2>Pick a topic, and let the journey begin!</h2>
-      <form id="topic-form">
-        <div class="input-wrapper">
-          <input type="text" id="topic-input" placeholder="Enter a topic like 'Quantum Physics' or 'Calculus'">
-          <button type="submit" class="submit-arrow">
-            <i data-feather="arrow-right"></i>
-          </button>
+  <header class="header">
+    <nav class="navbar navbar--desktop">
+      <div class="navbar__container">
+        <a href="index.html" class="navbar__logo">ARCHIMATION</a>
+        <div class="navbar__links">
+          <a href="index.html#home-section" class="navbar__link">Home</a>
+          <a href="index.html#about-section" class="navbar__link">About</a>
+          <a href="library.html" class="navbar__link active">Library</a>
         </div>
-      </form>
-    </div>
+        <div class="navbar__actions">
+           <a href="login.html" class="button button--secondary">
+             <i data-feather="user" class="button__icon"></i>
+             <span>My Account</span>
+           </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <section class="workspace-section">
+      <div class="container workspace-container">
+        <div class="prompt-container" id="prompt-container">
+          <h1 class="prompt-title">Pick a topic, and let the journey begin!</h1>
+          <p class="prompt-subtitle">Enter a subject like 'Quantum Physics' or 'The History of Rome' and we'll craft a visual explanation for you.</p>
+          <form id="topic-form"> 
+            <div class="prompt-input-wrapper">
+              <i data-feather="film" class="prompt-input-icon"></i>
+              <input 
+                type="text" 
+                id="text_prompt" 
+                name="text_prompt" 
+                required 
+                placeholder="What do you want to learn about today?"
+              >
+              <button type="submit" class="prompt-submit-button" aria-label="Generate video">
+                <i data-feather="arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="loading-state hidden" id="loading-state">
+          <div class="loading-animation">
+            <svg class="loader-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_V8m1{transform-origin:center;animation:spinner_zKoa 2s linear infinite}.spinner_V8m1 circle{stroke-linecap:round;animation:spinner_YpZS 1.5s ease-in-out infinite}@keyframes spinner_zKoa{100%{transform:rotate(360deg)}}@keyframes spinner_YpZS{0%{stroke-dasharray:0 150;stroke-dashoffset:0}47.5%{stroke-dasharray:42 150;stroke-dashoffset:-16}95%,100%{stroke-dasharray:42 150;stroke-dashoffset:-59}}</style><circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle></svg>
+          </div>
+          <h2 class="loading-title">Crafting your animation...</h2>
+          <p class="loading-text">This can take a few minutes. We're generating the script, voiceover, and rendering the video. Please keep this tab open.</p>
+          <div class="loading-error hidden" id="loading-error">
+            <p id="error-message"></p>
+            <button id="retry-button" class="button button--secondary">Try Again</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
-  
-  <script>feather.replace();</script>
-  <script src="../static/js/main.js"></script>
+
+<script>
+    feather.replace();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const topicForm = document.getElementById('topic-form');
+        const promptContainer = document.getElementById('prompt-container');
+        const loadingState = document.getElementById('loading-state');
+        const workspaceContainer = document.querySelector('.workspace-container'); // Get the main container
+
+        topicForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            // Show the loading animation
+            promptContainer.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            const topic = document.getElementById('text_prompt').value;
+
+            try {
+                // Start the generation process on the backend
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text_prompt: topic }),
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.video_url) {
+                    throw new Error('Failed to start video generation.');
+                }
+
+                // Begin polling for the video file
+                pollForVideo(result.video_url);
+
+            } catch (error) {
+                console.error('Error:', error);
+                // Show an error message to the user here
+            }
+        });
+
+        function pollForVideo(videoUrl) {
+            console.log(`Polling for video at: ${videoUrl}`);
+
+            const poller = setInterval(async () => {
+                try {
+                    // We use 'HEAD' request because we only need to know if the file
+                    // exists. We don't need to download the whole video yet.
+                    const videoCheck = await fetch(videoUrl, { method: 'HEAD' });
+
+                    if (videoCheck.ok) {
+                        // SUCCESS! The video exists.
+                        clearInterval(poller); // Stop polling
+                        console.log('Video found! Displaying now.');
+                        displayVideo(videoUrl);
+                    }
+                    // If not ok (e.g., 404 Not Found), do nothing and let the poller try again.
+
+                } catch (error) {
+                    // This can happen if the network is down.
+                    // For simplicity, we just log it. The poller will continue.
+                    console.log('Polling check failed, will retry...');
+                }
+            }, 5000); // Check every 5 seconds
+        }
+
+        function displayVideo(videoUrl) {
+            // Hide the loading state
+            loadingState.classList.add('hidden');
+
+            // Create a video player element
+            const videoPlayer = document.createElement('video');
+            videoPlayer.src = videoUrl;
+            videoPlayer.controls = true;
+            videoPlayer.autoplay = true;
+            videoPlayer.classList.add('result-video'); // For styling
+
+            // Create a title and a download button
+            const resultTitle = document.createElement('h2');
+            resultTitle.textContent = 'Your animation is ready!';
+            resultTitle.classList.add('prompt-title');
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = videoUrl;
+            downloadLink.textContent = 'Download Video';
+            downloadLink.setAttribute('download', ''); // This attribute prompts download
+            downloadLink.classList.add('button', 'button--secondary');
+
+            // Clear the container and add the new elements
+            workspaceContainer.innerHTML = '';
+            workspaceContainer.appendChild(resultTitle);
+            workspaceContainer.appendChild(videoPlayer);
+            workspaceContainer.appendChild(downloadLink);
+        }
+    });
+</script>
 </body>
 </html>

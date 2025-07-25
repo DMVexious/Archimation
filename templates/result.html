@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Result - The Secrets of Quantum Physics - ARCHIMATION</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static/css/style.css">
+  <link rel="stylesheet" href="../static/css/style-library.css"> <!-- For category badges -->
+  <link rel="stylesheet" href="../static/css/style-result.css">
+
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+  <header class="header">
+    <nav class="navbar navbar--desktop">
+      <div class="navbar__container">
+        <a href="index.html" class="navbar__logo">ARCHIMATION</a>
+        <div class="navbar__links">
+          <a href="index.html#home-section" class="navbar__link">Home</a>
+          <a href="index.html#about-section" class="navbar__link">About</a>
+          <a href="library.html" class="navbar__link active">My Library</a>
+        </div>
+        <div class="navbar__actions">
+           <a href="login.html" class="button button--secondary">
+             <i data-feather="user" class="button__icon"></i>
+             <span>My Account</span>
+           </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="video-result-page">
+    <div class="container">
+
+      <div class="video-player-wrapper">
+        <video class="hero__video" controls autoplay muted loop playsinline>
+            <source src="/static/videos/Example.mp4" type="video/mp4"> Your browser does not support the video tag.
+          </video>
+      </div>
+
+      <div class="video-details">
+        <span class="category-badge science-badge">Science</span>
+        <h1 class="video-title">The Secrets of Quantum Physics</h1>
+        <p class="video-meta">Generated just now • 5:42 min</p>
+
+        <div class="action-buttons">
+          <a href="#" class="button button--primary">
+            <i data-feather="download" class="button__icon"></i>
+            <span>Download Video</span>
+          </a>
+          <a href="input.html" class="button button--secondary">
+            <i data-feather="plus-circle" class="button__icon"></i>
+            <span>Create Another</span>
+          </a>
+          <a href="library.html" class="button button--secondary">
+            <i data-feather="grid" class="button__icon"></i>
+            <span>View My Library</span>
+          </a>
+        </div>
+
+        <div class="script-container">
+          <h2>Generated Script</h2>
+          <div class="script-content">
+            <p><strong>(Scene: A swirling vortex of particles)</strong></p>
+            <p>Narrator: At the smallest scales of our universe, the familiar rules of classical physics break down. Welcome to the bizarre and wonderful world of quantum mechanics.</p>
+            <p><strong>(Scene: An electron is shown as both a particle and a wave)</strong></p>
+            <p>Narrator: Here, particles like electrons can exist in multiple places at once, a phenomenon known as superposition. They behave not just as tiny billiard balls, but also as waves of probability, spread across space.</p>
+            <p><strong>(Scene: Two entangled particles are shown, spinning in opposite directions no matter how far apart)</strong></p>
+            <p>Narrator: Even stranger is quantum entanglement. Two particles can become linked in such a way that their fates are intertwined, no matter the distance separating them. If you measure the property of one, you instantly know the property of its partner. Einstein famously called this "spooky action at a distance."</p>
+            <p><strong>(Scene: A final shot of a quantum computer schematic)</strong></p>
+            <p>Narrator: Understanding these principles isn't just a mental exercise. It's the foundation for next-generation technology, from quantum computing to ultra-secure communication. The quantum realm may be strange, but it holds the key to the future.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    feather.replace();
+  </script>
+
+</body>
+</html>
