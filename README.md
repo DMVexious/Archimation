@@ -40,6 +40,9 @@ manim
 manim-voiceover
 tts
 threading
+Pydantic
+google.genai
+uuid
 
 Then, install it using pip:
 pip install -r requirements.txt
